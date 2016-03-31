@@ -34,14 +34,3 @@ void initADC(){
 
 }
 
-//read voltage off the pot pin so we can print it on the LCD
-int readAdc(float val) {
-    char str[] = "default";
-    
-    sprintf(str, "%.2f", val);
-    moveCursorLCD(1);
-    printStringLCD(str);
-    moveCursorLCD(0);
-    printStringLCD("Volts");
-    
-}

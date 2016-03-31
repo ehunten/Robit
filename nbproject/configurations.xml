@@ -10,6 +10,8 @@
       <itemPath>pwm.h</itemPath>
       <itemPath>switch.h</itemPath>
       <itemPath>timer.h</itemPath>
+      <itemPath>irLED.h</itemPath>
+      <itemPath>receiver.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -24,6 +26,8 @@
       <itemPath>pwm.c</itemPath>
       <itemPath>switch.c</itemPath>
       <itemPath>timer.c</itemPath>
+      <itemPath>irLED.c</itemPath>
+      <itemPath>receiver.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

@@ -12,10 +12,10 @@
 #include "adc.h"
 #include "config.h"
 #include "interrupt.h"
-#include "lcd.h"
 #include "pwm.h"
 #include "timer.h"
 #include "switch.h"
+#include "irLED.h"
 
 
 typedef enum stateTypeEnum{
@@ -33,10 +33,13 @@ int main(void)
     SYSTEMConfigPerformance(40000000);
     enableInterrupts();
     initTimer1();
-    initLCD();
     initADC();
     initHbridge();
     initPWM();
     initSwitch();
 
+    
+    while (1) {
+        
+    }
 }

@@ -1,3 +1,11 @@
+/*
+ * File:   switch.c
+ * Authors: Evelyn Hunten
+ *
+ * Created 3/31/16
+ */
+
+
 #include <xc.h>
 #include "switch.h"
 
