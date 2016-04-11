@@ -7,3 +7,4 @@
 
 
 void initAdc();
+int readAdc(float val);

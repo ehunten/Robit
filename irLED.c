@@ -31,3 +31,20 @@ void initIR() {
     LED4 = 1;
     
 }
+
+readySetGo() {
+    int i = 0;
+    LATDbits.LATD0 = 1;
+    for (i = 0; i < 1000; i++) 
+    {
+        delayUs(500);
+    }
+    LATDbits.LATD0 = 0;
+    LATDbits.LATD1 = 1;
+    for (i = 0; i < 1000; i++) 
+    {
+        delayUs(500);
+    }
+    LATDbits.LATD1 = 0;
+    LATDbits.LATD2 = 1;
+}

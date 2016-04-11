@@ -9,5 +9,5 @@
 #define	IRLED_H
 
 void initIR();
-
+void readySetGo();
 #endif	/* IRLED_H */

@@ -42,12 +42,12 @@ void initPWM() {
     ///////////////////
 
     OC1RS = 1000;
-
+    OC1RS = 0;
     OC1CONbits.ON = 1;
     
 
-    OC3RS = 1000;              //dual compare mode
-
+    //OC3RS = 1000;              //dual compare mode
+OC3RS = 0;
     OC3CONbits.ON = 1;      //turn it on
     
 }
