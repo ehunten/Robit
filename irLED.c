@@ -33,18 +33,10 @@ void initIR() {
 }
 
 readySetGo() {
+    //changed this function - now all it does is delay so we can get better readings off the LCD for testing
     int i = 0;
-    LATDbits.LATD0 = 1;
     for (i = 0; i < 1000; i++) 
     {
         delayUs(500);
     }
-    LATDbits.LATD0 = 0;
-    LATDbits.LATD1 = 1;
-    for (i = 0; i < 1000; i++) 
-    {
-        delayUs(500);
-    }
-    LATDbits.LATD1 = 0;
-    LATDbits.LATD2 = 1;
 }

@@ -18,10 +18,30 @@
 #include "irLED.h"
 #include "lcd.h"
 
-#define BUF0 ADC1BUF0
-#define BUF1 ADC1BUF1
-#define BUF2 ADC1BUF2
-#define BUF3 ADC1BUF3
+#define left ADC1BUF0
+#define midLeft ADC1BUF1
+#define midRight ADC1BUF2
+#define right ADC1BUF3
+#define motorL OC3RS
+#define motorR OC1RS
+#define regSpeed 600
+#define turnSpeed 800
+#define slowSpeed 500
+
+//sensor lower boundaries - it sees tape
+//need to be calibrated
+#define leftLower 115
+#define midLeftLower 115
+#define midRightLower 115
+#define rightLower 115
+//sensor upper boundaries - doesn't see tape
+//need to be calibrated
+#define leftUpper 140
+#define midLeftUpper 140
+#define midRightUpper 140
+#define rightUpper 140
+
+
 
 typedef enum stateTypeEnum{
     init, fwd, turnRight, turnLeft, objFound, findTape, Tsection, done
@@ -46,9 +66,7 @@ int main(void)
     
     initIR();
     clearLCD();
-    
-    TRISDbits.TRISD0 = 0;
-    TRISDbits.TRISD1 = 0;
+
     TRISDbits.TRISD2 = 0;
     int i = 0;
     
@@ -57,70 +75,77 @@ int main(void)
         
             switch(state) {
                 case init:
-                    //if (BUF1 < 130 && BUF2 < 130 && BUF0 > 145 && BUF3 > 145) {
-                    if (BUF1 > 100 && BUF2 > 100 && BUF0 > 100 && BUF3 > 100){
+                    if (left > 100 && midLeft > 100 && midRight > 100 && right > 100){
                         readySetGo();
+                        LATDbits.LATD2 = 1;
                     }
-                    val = BUF1;
+                    val = midLeft;
                     readAdc(val);
-                    state = fwd;
+                    //state = fwd;
                     break;
 
                 case fwd:
-                    OC3RS = 300;
-                    OC1RS = 300;
-                    if (BUF0 < 130 && BUF3 > 140) {
+                    motorL = regSpeed;
+                    motorR = regSpeed;
+                    //if there is a right turn
+                    if (left < leftLower && right > rightUpper) {
                         state = turnRight;
                     }
-                    if (BUF3 < 130 && BUF0 > 140) {
+                    //if there is a left turn
+                    if (right < rightLower && left > leftUpper) {
                         state = turnLeft;
                     }
                     //LOST THE TAPE
-                    if (BUF1 > 145 && BUF2 > 145 && BUF0 > 145 && BUF3 > 145){
+                    if (midLeft > midLeftUpper && midRight > midRightUpper && left > leftUpper && right > rightUpper){
                         state = findTape;
                     }
-                    
-                    //FOUND AN INTERSECTION
-                    if (BUF1 > 130 && BUF2 > 130 && BUF0 > 130 && BUF3 > 130){
+                    //Intersection
+                    if (midLeft > midLeftLower && midRight > midRightLower && left > leftLower && right > rightLower){
                         state = Tsection;
                     }
                     
                     break;
-
+                ////For turns, keep going but one wheel will go faster
                 case turnRight:
-                    while (BUF0 < 140) {
-                        OC3RS = 400;
+                    while (left < leftUpper) {
+                        motorL = turnSpeed;
                     }
                     state = fwd;
                     break;
                     
                 case turnLeft:
-                    while (BUF3 < 140) {
-                        OC1RS = 400;
+                    while (right < rightLower) {
+                        motorR = turnSpeed;
                     }
                     state = fwd;
                     break;
-
+                ////To be implimented
                 case objFound:
                     break;
 
+                ////Lost - spin in place
+                ////Would like to find a way to spin 360 deg
                 case findTape:
-                    OC3RS = 300;
-                    OC1RS = 0;
-                    while (BUF0 > 130) ;
+                    motorL = turnSpeed;
+                    reverseMotor('R');
+                    motorR = turnSpeed;
+                    while (left > leftLower) ;
                     
-                    if (BUF0 < 130) {
-                        while (BUF1 > 140 && BUF2 > 140) {
-                            OC3RS = 300;
+                    if (left < leftLower) {
+                        //until the middle sensors find the tape, turn slowly
+                        while (midLeft > midLeftUpper && midRight > midRightUpper) {
+                            motorL = slowSpeed;
+                            motorR = slowSpeed;
                         }
+                    reverseMotor('F'); //Set motorR back to forward
                         state = fwd;
                     }
                     break;
 
+                ////Intersection
                 case Tsection:
-                    for (i = 0; i < 50000; i++) {
-                        
-                    }
+                //wait to count line until after wheel've passed it
+                    while (left < leftLower && right < rightLower) ;
                     doneLine ++;
                     if (doneLine == 3) {
                         state = done;
@@ -131,8 +156,22 @@ int main(void)
                     break;
                     
                 case done:
+                //turn around and do the course again
                     state = findTape;                    
                     break;
         }
     }
+}
+
+
+void reverseMotor(char motor) {
+    if (motor == 'R') {
+        RPD1Rbits.RPD1R = 0;
+        RPD5Rbits.RPD5R = 0b1100;
+    }
+    else if (motor == 'L') {
+        RPD1Rbits.RPD1R = 0b1100;
+        RPD5Rbits.RPD5R = 0; 
+    }
+
 }
