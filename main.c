@@ -44,7 +44,7 @@
 
 
 typedef enum stateTypeEnum{
-    init, fwd, turnRight, turnLeft, objFound, findTape, Tsection, done
+    init, fwd, turnRight, turnLeft, objFound, findTape, Tsection, tapeTurnoffLeft, tapeTurnoffRight, done
 } stateType;
 
 volatile stateType state = init;
@@ -85,6 +85,8 @@ int main(void)
                     break;
 
                 case fwd:
+                    printStringLCD("Fwd");
+                    clearLCD();
                     motorL = regSpeed;
                     motorR = regSpeed;
                     //if there is a right turn
@@ -103,10 +105,20 @@ int main(void)
                     if (midLeft > midLeftLower && midRight > midRightLower && left > leftLower && right > rightLower){
                         state = Tsection;
                     }
+
+                    //Tape turnoff
+                    if (midLeft < midLeftLower && midRight < midRightLower && left < leftLower) {
+                        state = tapeTurnoffLeft;
+                    }
+                    if (midLeft < midLeftLower && midRight < midRightLower && right < rightLower) {
+                        state = tapeTurnoffRight;
+                    }
                     
                     break;
                 ////For turns, keep going but one wheel will go faster
                 case turnRight:
+                    printStringLCD("turnRight");
+                    clearLCD();
                     while (left < leftUpper) {
                         motorL = turnSpeed;
                     }
@@ -114,6 +126,8 @@ int main(void)
                     break;
                     
                 case turnLeft:
+                    printStringLCD("turnLeft");
+                    clearLCD();
                     while (right < rightLower) {
                         motorR = turnSpeed;
                     }
@@ -126,6 +140,8 @@ int main(void)
                 ////Lost - spin in place
                 ////Would like to find a way to spin 360 deg
                 case findTape:
+                    printStringLCD("Lost");
+                    clearLCD();
                     motorL = turnSpeed;
                     reverseMotor('R');
                     motorR = turnSpeed;
@@ -144,6 +160,8 @@ int main(void)
 
                 ////Intersection
                 case Tsection:
+                    printStringLCD("Intersection");
+                    clearLCD();
                 //wait to count line until after wheel've passed it
                     while (left < leftLower && right < rightLower) ;
                     doneLine ++;
@@ -154,8 +172,23 @@ int main(void)
                         state = fwd;
                     }
                     break;
+
+                ////For now we are not trying to do the D loop
+                case tapeTurnoffLeft:
+                    printStringLCD("SharpLeft");
+                    clearLCD();
+                    state = fwd;
+                    break;
+
+                case tapeTurnoffRight:
+                    printStringLCD("SharpRight");
+                    clearLCD();
+                    state = fwd;
+                    break;
                     
                 case done:
+                    printStringLCD("TURNAROUND");
+                    clearLCD();
                 //turn around and do the course again
                     state = findTape;                    
                     break;
