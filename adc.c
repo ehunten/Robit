@@ -30,11 +30,7 @@ void initADC(){
     AD1CON3bits.SAMC = 2; // 2 Tad per sample
     AD1CON3bits.ADCS = 0xFF; // 512 times the PBCLK
     AD1CHSbits.CH0NA = 0; // Use Vref- as negative reference
-/*  AD1CHSbits.CH0SA0 = 0; // Scan AN0
-    AD1CHSbits.CH0SA1 = 2; //
-    AD1CHSbits.CH0SA2 = 4;
-    AD1CHSbits.CH0SA3 = 8;
-  */
+
     AD1CSSLbits.CSSL0 = 1;
     AD1CSSLbits.CSSL2 = 1;
     AD1CSSLbits.CSSL4 = 1;
@@ -51,6 +47,6 @@ int readAdc(float val) {
     sprintf(str, "%.2f", val);
     moveCursorLCD(1);
     printStringLCD(str);
-    moveCursorLCD(0);
+    //moveCursorLCD(0);
     
 }

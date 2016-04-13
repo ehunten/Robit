@@ -24,27 +24,27 @@
 #define right ADC1BUF3
 #define motorL OC3RS
 #define motorR OC1RS
-#define regSpeed 600
-#define turnSpeed 800
+#define regSpeed 700
+#define turnSpeed 600
 #define slowSpeed 500
 
 //sensor lower boundaries - it sees tape
 //need to be calibrated
-#define leftLower 115
-#define midLeftLower 115
+#define leftLower 200
+#define midLeftLower 80
 #define midRightLower 115
 #define rightLower 115
 //sensor upper boundaries - doesn't see tape
 //need to be calibrated
-#define leftUpper 140
-#define midLeftUpper 140
+#define leftUpper 700
+#define midLeftUpper 340
 #define midRightUpper 140
 #define rightUpper 140
 
 
 
 typedef enum stateTypeEnum{
-    init, fwd, turnRight, turnLeft, objFound, findTape, Tsection, tapeTurnoffLeft, tapeTurnoffRight, done
+    init, fwd, turnRight, turnLeft, objFound, findTape, Tsection, tapeTurnoffLeft, tapeTurnoffRight, done, w1
 } stateType;
 
 volatile stateType state = init;
@@ -66,6 +66,7 @@ int main(void)
     
     initIR();
     clearLCD();
+    fwd();
 
     TRISDbits.TRISD2 = 0;
     int i = 0;
@@ -75,10 +76,10 @@ int main(void)
         
             switch(state) {
                 case init:
-                    if (left > 100 && midLeft > 100 && midRight > 100 && right > 100){
-                        readySetGo();
-                        LATDbits.LATD2 = 1;
-                    }
+                    //if (left > 100 && midLeft > 100 && midRight > 100 && right > 100){
+                        //readySetGo();
+                       // LATDbits.LATD2 = 1;
+                    //}
                     val = midLeft;
                     readAdc(val);
                     //state = fwd;
@@ -89,13 +90,13 @@ int main(void)
                     clearLCD();
                     motorL = regSpeed;
                     motorR = regSpeed;
-                    //if there is a right turn
-                    if (left < leftLower && right > rightUpper) {
-                        state = turnRight;
-                    }
                     //if there is a left turn
-                    if (right < rightLower && left > leftUpper) {
+                    if (left < leftLower && right > rightUpper) {
                         state = turnLeft;
+                    }
+                    //if there is a right turn
+                    if (right < rightLower && left > leftUpper) {
+                        state = turnRight;
                     }
                     //LOST THE TAPE
                     if (midLeft > midLeftUpper && midRight > midRightUpper && left > leftUpper && right > rightUpper){
@@ -192,6 +193,9 @@ int main(void)
                 //turn around and do the course again
                     state = findTape;                    
                     break;
+                    
+                case w1:
+                    break;
         }
     }
 }
@@ -207,4 +211,46 @@ void reverseMotor(char motor) {
         RPD5Rbits.RPD5R = 0; 
     }
 
+}
+
+
+//Timer interrupt
+void __ISR(_TIMER_3_VECTOR, IPL7SRS) _T3Interrupt () {
+    
+    PORTD;
+    if (PORTDbits.RD6 == 1) {
+    IFS0bits.T3IF = 0;
+        switch (state) {
+            case w1: state = fwd;
+                break;
+        }
+    }
+
+}
+
+//Button change notification
+void __ISR(_CHANGE_NOTICE_VECTOR, IPL7SRS) _CNInterrupt () {
+    
+    IFS1bits.CNDIF = 0;                 // Put down the flag
+    PORTD;
+    
+    LATDbits.LATD0 = 0;
+    
+    if (PORTDbits.RD6 == 0) {
+        initTimer3();
+        switch (state) {
+            case init: state = w1;
+            break;
+        }
+            
+    }
+    else if (PORTDbits.RD6 == 1) {
+        IEC0bits.T3IE = 0;
+        T3CONbits.ON = 0;
+        switch (state) {
+            case w1: state = fwd;
+                break;
+        }
+    }
+    
 }
