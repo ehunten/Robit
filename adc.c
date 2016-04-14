@@ -16,7 +16,12 @@ void initADC(){
     ANSELBbits.ANSB2 = 0;
     ANSELBbits.ANSB4 = 0;
     ANSELBbits.ANSB8 = 0;
-
+    /*
+    TRISBbits.TRISB0 = 1;
+    TRISBbits.TRISB2 = 1;
+    TRISBbits.TRISB4 = 1;
+    TRISBbits.TRISB8 = 1;
+    */
     AD1CON1bits.ADON = 0; //turn off the ADC
     
     AD1CON1bits.FORM = 0; // 16 unsigned integer

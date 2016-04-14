@@ -24,27 +24,27 @@
 #define right ADC1BUF3
 #define motorL OC3RS
 #define motorR OC1RS
-#define regSpeed 700
-#define turnSpeed 600
-#define slowSpeed 500
+#define regSpeed 800
+#define turnSpeed 900
+#define slowSpeed 600
 
 //sensor lower boundaries - it sees tape
 //need to be calibrated
-#define leftLower 200
-#define midLeftLower 80
-#define midRightLower 115
-#define rightLower 115
+#define leftLower 974
+#define midLeftLower 984
+#define midRightLower 984
+#define rightLower 985
 //sensor upper boundaries - doesn't see tape
 //need to be calibrated
-#define leftUpper 700
-#define midLeftUpper 340
-#define midRightUpper 140
-#define rightUpper 140
+#define leftUpper 987//991
+#define midLeftUpper 990//996
+#define midRightUpper 990//996
+#define rightUpper 992//997
 
 
 
 typedef enum stateTypeEnum{
-    init, fwd, turnRight, turnLeft, objFound, findTape, Tsection, tapeTurnoffLeft, tapeTurnoffRight, done, w1
+    init, fwd, go, turnRight, turnLeft, objFound, findTape, Tsection, tapeTurnoffLeft, tapeTurnoffRight, done, w1
 } stateType;
 
 volatile stateType state = init;
@@ -63,14 +63,15 @@ int main(void)
     initLCD();
     initHbridge();
     initPWM();
+    initSwitch();
+    
     
     initIR();
     clearLCD();
-    fwd();
 
     TRISDbits.TRISD2 = 0;
     int i = 0;
-    
+    stop();
     
     while (1) {
         
@@ -82,26 +83,39 @@ int main(void)
                     //}
                     val = midLeft;
                     readAdc(val);
-                    //state = fwd;
                     break;
 
+                case go:
+                    printStringLCD("GO");
+                    forward();
+                    state = fwd;
+                    break;
+                    
                 case fwd:
                     printStringLCD("Fwd");
                     clearLCD();
                     motorL = regSpeed;
                     motorR = regSpeed;
+                    
+                    if (midRight < midRightUpper && midLeft < midLeftUpper && left > leftUpper && right > rightUpper) {
+                        state = fwd;
+                    }
+                    /*
                     //if there is a left turn
-                    if (left < leftLower && right > rightUpper) {
+                    if (left < leftLower && right > rightUpper && midRight > midRightUpper) {
                         state = turnLeft;
                     }
                     //if there is a right turn
-                    if (right < rightLower && left > leftUpper) {
+                    if (right < rightLower && left > leftUpper && midLeft > midLeftUpper) {
                         state = turnRight;
                     }
+                     * */
                     //LOST THE TAPE
                     if (midLeft > midLeftUpper && midRight > midRightUpper && left > leftUpper && right > rightUpper){
-                        state = findTape;
+                        //state = findTape;
+                        stop();
                     }
+                    /*
                     //Intersection
                     if (midLeft > midLeftLower && midRight > midRightLower && left > leftLower && right > rightLower){
                         state = Tsection;
@@ -114,7 +128,7 @@ int main(void)
                     if (midLeft < midLeftLower && midRight < midRightLower && right < rightLower) {
                         state = tapeTurnoffRight;
                     }
-                    
+                    */
                     break;
                 ////For turns, keep going but one wheel will go faster
                 case turnRight:
@@ -134,7 +148,7 @@ int main(void)
                     }
                     state = fwd;
                     break;
-                ////To be implimented
+                ////To be implemented
                 case objFound:
                     break;
 
@@ -144,7 +158,7 @@ int main(void)
                     printStringLCD("Lost");
                     clearLCD();
                     motorL = turnSpeed;
-                    reverseMotor('R');
+                    //reverseMotor('R');
                     motorR = turnSpeed;
                     while (left > leftLower) ;
                     
@@ -154,7 +168,7 @@ int main(void)
                             motorL = slowSpeed;
                             motorR = slowSpeed;
                         }
-                    reverseMotor('F'); //Set motorR back to forward
+                    //reverseMotor('F'); //Set motorR back to forward
                         state = fwd;
                     }
                     break;
@@ -221,7 +235,7 @@ void __ISR(_TIMER_3_VECTOR, IPL7SRS) _T3Interrupt () {
     if (PORTDbits.RD6 == 1) {
     IFS0bits.T3IF = 0;
         switch (state) {
-            case w1: state = fwd;
+            case w1: state = go;
                 break;
         }
     }
@@ -248,7 +262,7 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL7SRS) _CNInterrupt () {
         IEC0bits.T3IE = 0;
         T3CONbits.ON = 0;
         switch (state) {
-            case w1: state = fwd;
+            case w1: state = go;
                 break;
         }
     }
