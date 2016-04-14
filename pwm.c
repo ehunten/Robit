@@ -76,11 +76,11 @@ void forward(){
 }
 
 void backward() {
-    RPD1Rbits.RPD1R = 0b1100;   //map OC1 to RD1 1100
-    RPD5Rbits.RPD5R = 0;   //map OC1 to RD5 (ground right now)
+    RPF1Rbits.RPF1R = 0b1011;
+    RPB10Rbits.RPB10R = 0;
     
-    //RPF1Rbits.RPF1R = 0;
-    //RPB10Rbits.RPB10R = 0b1011;
+    RPD1Rbits.RPD1R = 0;   //map OC1 to RD1 1100
+    RPD5Rbits.RPD5R = 0b1100;   //map OC1 to RD5 (ground right now) 
    
 }
 

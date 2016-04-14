@@ -24,22 +24,22 @@
 #define right ADC1BUF3
 #define motorL OC3RS
 #define motorR OC1RS
-#define regSpeed 800
-#define turnSpeed 900
-#define slowSpeed 600
+#define regSpeed 650
+#define turnSpeed 1000
+#define slowSpeed 450
 
 //sensor lower boundaries - it sees tape
 //need to be calibrated
-#define leftLower 974
-#define midLeftLower 984
+#define leftLower 986
+#define midLeftLower 987
 #define midRightLower 984
-#define rightLower 985
+#define rightLower 992
 //sensor upper boundaries - doesn't see tape
 //need to be calibrated
-#define leftUpper 987//991
-#define midLeftUpper 990//996
-#define midRightUpper 990//996
-#define rightUpper 992//997
+#define leftUpper 996//986 - 1002
+#define midLeftUpper 994//987 - 998
+#define midRightUpper 995//989 - 999
+#define rightUpper 998//992 - 1004
 
 
 
@@ -77,11 +77,7 @@ int main(void)
         
             switch(state) {
                 case init:
-                    //if (left > 100 && midLeft > 100 && midRight > 100 && right > 100){
-                        //readySetGo();
-                       // LATDbits.LATD2 = 1;
-                    //}
-                    val = midLeft;
+                    val = right;
                     readAdc(val);
                     break;
 
@@ -92,7 +88,7 @@ int main(void)
                     break;
                     
                 case fwd:
-                    printStringLCD("Fwd");
+                    readAdc(val);
                     clearLCD();
                     motorL = regSpeed;
                     motorR = regSpeed;
@@ -100,21 +96,28 @@ int main(void)
                     if (midRight < midRightUpper && midLeft < midLeftUpper && left > leftUpper && right > rightUpper) {
                         state = fwd;
                     }
-                    /*
+                    
                     //if there is a left turn
-                    if (left < leftLower && right > rightUpper && midRight > midRightUpper) {
+                    if (left < leftUpper || midLeft < midLeftUpper) {
+                   // if ((left < leftUpper || midLeft < midLeftUpper) && midRight > midRightUpper) {
                         state = turnLeft;
                     }
+                    
+                    
                     //if there is a right turn
-                    if (right < rightLower && left > leftUpper && midLeft > midLeftUpper) {
+                    if ((right < rightUpper || midRight < midRightUpper) && midLeft > midLeftUpper) {
                         state = turnRight;
                     }
-                     * */
+                    //if (midRight < midRightUpper && midLeft > midLeftUpper) {
+                    //    state = turnRight;
+                    //}
+                     
                     //LOST THE TAPE
-                    if (midLeft > midLeftUpper && midRight > midRightUpper && left > leftUpper && right > rightUpper){
-                        //state = findTape;
-                        stop();
-                    }
+                   // else if (midLeft > midLeftUpper && midRight > midRightUpper && left > leftUpper && right > rightUpper){
+                     //   state = findTape;
+                        //stop();
+                    //}
+
                     /*
                     //Intersection
                     if (midLeft > midLeftLower && midRight > midRightLower && left > leftLower && right > rightLower){
@@ -129,23 +132,31 @@ int main(void)
                         state = tapeTurnoffRight;
                     }
                     */
+                    
+                    else {
+                        forward();
+                    }
                     break;
                 ////For turns, keep going but one wheel will go faster
                 case turnRight:
                     printStringLCD("turnRight");
                     clearLCD();
-                    while (left < leftUpper) {
-                        motorL = turnSpeed;
-                    }
+                    motorL = turnSpeed;
+                    motorR = slowSpeed;
+                    while (midLeft > midLeftUpper && midRight > midRightUpper && right < rightUpper);
+                    motorR = regSpeed;
+                    motorL = regSpeed;
                     state = fwd;
                     break;
                     
                 case turnLeft:
                     printStringLCD("turnLeft");
                     clearLCD();
-                    while (right < rightLower) {
-                        motorR = turnSpeed;
-                    }
+                    motorR = turnSpeed;
+                    motorL = slowSpeed;
+                    while (midLeft > midLeftUpper && midRight > midRightUpper);
+                    motorR = regSpeed;
+                    motorL = regSpeed;
                     state = fwd;
                     break;
                 ////To be implemented
@@ -157,19 +168,21 @@ int main(void)
                 case findTape:
                     printStringLCD("Lost");
                     clearLCD();
-                    motorL = turnSpeed;
-                    //reverseMotor('R');
-                    motorR = turnSpeed;
+                    //motorL = slowSpeed;
+                    reverseMotor('R');
+                    //motorR = slowSpeed;
                     while (left > leftLower) ;
+                    stop();
                     
-                    if (left < leftLower) {
                         //until the middle sensors find the tape, turn slowly
                         while (midLeft > midLeftUpper && midRight > midRightUpper) {
-                            motorL = slowSpeed;
-                            motorR = slowSpeed;
+                            forward();
+                            //motorL = regSpeed;
+                            //motorR = regSpeed;
                         }
-                    //reverseMotor('F'); //Set motorR back to forward
-                        state = fwd;
+                    if (midLeft < midLeftUpper && midRight < midRightUpper) {
+                    reverseMotor('F'); //Set motorR back to forward
+                    state = fwd;
                     }
                     break;
 
@@ -217,12 +230,12 @@ int main(void)
 
 void reverseMotor(char motor) {
     if (motor == 'R') {
-        RPD1Rbits.RPD1R = 0;
-        RPD5Rbits.RPD5R = 0b1100;
+    RPF1Rbits.RPF1R = 0b1011;
+    RPB10Rbits.RPB10R = 0;
     }
     else if (motor == 'L') {
-        RPD1Rbits.RPD1R = 0b1100;
-        RPD5Rbits.RPD5R = 0; 
+    RPF1Rbits.RPF1R = 0;
+    RPB10Rbits.RPB10R = 0b1011; 
     }
 
 }
