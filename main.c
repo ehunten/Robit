@@ -36,9 +36,9 @@
 #define rightLower 992
 //sensor upper boundaries - doesn't see tape
 //need to be calibrated
-#define leftUpper 996//986 - 1002
-#define midLeftUpper 994//987 - 998
-#define midRightUpper 995//989 - 999
+#define leftUpper 992//986 - 1002
+#define midLeftUpper 990//987 - 998
+#define midRightUpper 990//989 - 999
 #define rightUpper 998//992 - 1004
 
 
@@ -77,7 +77,7 @@ int main(void)
         
             switch(state) {
                 case init:
-                    val = right;
+                    val = midRight;
                     readAdc(val);
                     break;
 
@@ -89,7 +89,7 @@ int main(void)
                     
                 case fwd:
                     readAdc(val);
-                    clearLCD();
+                    //clearLCD();
                     motorL = regSpeed;
                     motorR = regSpeed;
                     
@@ -98,14 +98,15 @@ int main(void)
                     }
                     
                     //if there is a left turn
-                    if (left < leftUpper || midLeft < midLeftUpper) {
+                    if ((left < leftUpper)) {
                    // if ((left < leftUpper || midLeft < midLeftUpper) && midRight > midRightUpper) {
                         state = turnLeft;
                     }
                     
                     
                     //if there is a right turn
-                    if ((right < rightUpper || midRight < midRightUpper) && midLeft > midLeftUpper) {
+                    if (right < rightUpper) {
+                    //if ((right < rightUpper || midRight < midRightUpper) && midLeft > midLeftUpper) {
                         state = turnRight;
                     }
                     //if (midRight < midRightUpper && midLeft > midLeftUpper) {
@@ -118,12 +119,12 @@ int main(void)
                         //stop();
                     //}
 
-                    /*
+                    
                     //Intersection
-                    if (midLeft > midLeftLower && midRight > midRightLower && left > leftLower && right > rightLower){
+                    if (midLeft < midLeftUpper && midRight < midRightUpper && left < leftUpper && right < rightUpper){
                         state = Tsection;
                     }
-
+                     /*
                     //Tape turnoff
                     if (midLeft < midLeftLower && midRight < midRightLower && left < leftLower) {
                         state = tapeTurnoffLeft;
@@ -143,7 +144,7 @@ int main(void)
                     clearLCD();
                     motorL = turnSpeed;
                     motorR = slowSpeed;
-                    while (midLeft > midLeftUpper && midRight > midRightUpper && right < rightUpper);
+                    while (midLeft > midLeftUpper && midRight > midRightUpper);
                     motorR = regSpeed;
                     motorL = regSpeed;
                     state = fwd;
@@ -181,7 +182,7 @@ int main(void)
                             //motorR = regSpeed;
                         }
                     if (midLeft < midLeftUpper && midRight < midRightUpper) {
-                    reverseMotor('F'); //Set motorR back to forward
+                    reverseMotor('L'); //Set motorR back to forward
                     state = fwd;
                     }
                     break;
@@ -190,15 +191,11 @@ int main(void)
                 case Tsection:
                     printStringLCD("Intersection");
                     clearLCD();
-                //wait to count line until after wheel've passed it
-                    while (left < leftLower && right < rightLower) ;
-                    doneLine ++;
-                    if (doneLine == 3) {
+                    
+                    if (left > leftUpper && midLeft > midLeftUpper && midRight > midRightUpper && right > rightUpper) {
                         state = done;
                     }
-                    else {
-                        state = fwd;
-                    }
+                 
                     break;
 
                 ////For now we are not trying to do the D loop
@@ -217,8 +214,14 @@ int main(void)
                 case done:
                     printStringLCD("TURNAROUND");
                     clearLCD();
-                //turn around and do the course again
-                    state = findTape;                    
+                    stop();
+                    reverseMotor('R');
+                    motorR = regSpeed;
+                    motorL = regSpeed;
+                    if (left < leftUpper) {
+                        reverseMotor('L');
+                        state = turnRight;
+                    }                   
                     break;
                     
                 case w1:
