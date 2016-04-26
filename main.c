@@ -99,19 +99,14 @@ int main(void)
                     
                     //if there is a left turn
                     if ((left < leftUpper)) {
-                   // if ((left < leftUpper || midLeft < midLeftUpper) && midRight > midRightUpper) {
                         state = turnLeft;
                     }
                     
                     
                     //if there is a right turn
                     if (right < rightUpper) {
-                    //if ((right < rightUpper || midRight < midRightUpper) && midLeft > midLeftUpper) {
                         state = turnRight;
                     }
-                    //if (midRight < midRightUpper && midLeft > midLeftUpper) {
-                    //    state = turnRight;
-                    //}
                      
                     //LOST THE TAPE
                    // else if (midLeft > midLeftUpper && midRight > midRightUpper && left > leftUpper && right > rightUpper){
