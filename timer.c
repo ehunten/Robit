@@ -21,28 +21,26 @@ void initTimer1(){
     //Initialize timer 1
     IFS0bits.T1IF = CLEAR;          // Put the flag down
     TMR1 = CLEAR;                   // clear TMR1
-    PR1 = 9;                      // Initialize PR1 - should be 10milliseconds
-    T1CONbits.TCKPS = PRESC1;     // Initialize pre-scalar
+    PR1 = 9;                        // Initialize PR1 - should be 10milliseconds
+    T1CONbits.TCKPS = PRESC1;       // Initialize pre-scalar
     T1CONbits.TCS = CLEAR;          // Set the oscillator
-   // IEC0bits.T1IE = ENABLE;         // Enable the interrupt
-   // IPC1bits.T1IP = DEFAULT;        // Configure the Interrupt Priority
     T1CONbits.ON = ENABLE;          // Turn the timer on
 }
 
 void initTimer3(){
-    IFS0bits.T3IF = 0;// Put the flag down
-    TMR3 = 0;// clear TMR1
-    PR3 = 39061;// Initialize PR1
-    T3CONbits.TCKPS = 3; // Initialize pre-scalar
-    T3CONbits.TCS = 0; // Setting the oscillator
-    IEC0bits.T3IE = 1;// Enable the interrupt
-    IPC3bits.IC3IP = 7;// Configure the Interrupt Priority
-    T3CONbits.ON = 1;// Turn the timer on
+    IFS0bits.T3IF = 0;              // Put the flag down
+    TMR3 = 0;                       // clear TMR1
+    PR3 = 39061;                    // Initialize PR1
+    T3CONbits.TCKPS = 3;            // Initialize pre-scalar
+    T3CONbits.TCS = 0;              // Setting the oscillator
+    IEC0bits.T3IE = 1;              // Enable the interrupt
+    IPC3bits.IC3IP = 7;             // Configure the Interrupt Priority
+    T3CONbits.ON = 1;               // Turn the timer on
 }
 
 void stopTimer() {
-        T3CONbits.ON = 0;// Turn the timer off
-        IEC0bits.T3IE = 0;// disable the interrupt
+        T3CONbits.ON = 0;           // Turn the timer off
+        IEC0bits.T3IE = 0;          // disable the interrupt
 }
 
 
