@@ -8,7 +8,7 @@
 #include <xc.h>
 #include "pwm.h"
 
-#define PRESC1 0 //CHANGE THIS
+#define PRESC1 0
 
 void initPWM() {
 
@@ -18,6 +18,7 @@ void initPWM() {
     T2CONbits.TCKPS = PRESC1;   //Set prescalar
     T2CONbits.TCS = 0;          //Set Oscillator
     T2CONbits.ON = 1;          //turn timer on
+    
 //THIS IS HOW IT SHOULD BE FOR FORWARD DO NOT TOUCH
     RPF1Rbits.RPF1R = 0;
     RPB10Rbits.RPB10R = 0b1011;
@@ -41,13 +42,7 @@ void initPWM() {
    
     ///////////////////
 
-    OC1RS = 1000;
-    OC1RS = 0;
     OC1CONbits.ON = 1;
-    
-
-    OC3RS = 1000;              //dual compare mode
-    //OC3RS = 0;
     OC3CONbits.ON = 1;      //turn it on
     
 }
@@ -70,8 +65,8 @@ void forward(){
     RPF1Rbits.RPF1R = 0;
     RPB10Rbits.RPB10R = 0b1011;
     
-    RPD1Rbits.RPD1R = 0b1100;   //map OC1 to RD1 1100
-    RPD5Rbits.RPD5R = 0;   //map OC1 to RD5 (ground right now) 
+    RPD1Rbits.RPD1R = 0b1100;  
+    RPD5Rbits.RPD5R = 0;   
        
 }
 
@@ -79,8 +74,8 @@ void backward() {
     RPF1Rbits.RPF1R = 0b1011;
     RPB10Rbits.RPB10R = 0;
     
-    RPD1Rbits.RPD1R = 0;   //map OC1 to RD1 1100
-    RPD5Rbits.RPD5R = 0b1100;   //map OC1 to RD5 (ground right now) 
+    RPD1Rbits.RPD1R = 0;  
+    RPD5Rbits.RPD5R = 0b1100;    
    
 }
 

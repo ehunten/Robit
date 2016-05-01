@@ -18,6 +18,7 @@
 #define LED4 LATBbits.LATB12
 
 #define OUT 0
+#define ON 1
 
 void initIR() {
     TRISLED1 = OUT;
@@ -25,18 +26,18 @@ void initIR() {
     TRISLED3 = OUT;
     TRISLED4 = OUT;
     
-    LED1 = 1;
-    LED2 = 1;
-    LED3 = 1;
-    LED4 = 1;
+    LED1 = ON;
+    LED2 = ON;
+    LED3 = ON;
+    LED4 = ON;
     
 }
 
 readySetGo() {
     //changed this function - now all it does is delay so we can get better readings off the LCD for testing
     int i = 0;
-    for (i = 0; i < 1000; i++) 
+    for (i = 0; i < 200; i++) 
     {
-        delayUs(500);
+        delayUs(100);
     }
 }

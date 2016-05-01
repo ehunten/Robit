@@ -22,9 +22,10 @@
 #define midLeft ADC1BUF1
 #define midRight ADC1BUF2
 #define right ADC1BUF3
+#define sonicSense ADC1BUF4
 #define motorL OC3RS
 #define motorR OC1RS
-#define regSpeed 650
+#define regSpeed 700
 #define turnSpeed 1000
 #define slowSpeed 450
 
@@ -44,7 +45,7 @@
 
 
 typedef enum stateTypeEnum{
-    init, fwd, go, turnRight, turnLeft, objFound, findTape, Tsection, tapeTurnoffLeft, tapeTurnoffRight, done, w1
+    init, fwd, go, turnRight, turnLeft, objFound, findTape, Tsection, done, w1
 } stateType;
 
 volatile stateType state = init;
@@ -64,32 +65,48 @@ int main(void)
     initHbridge();
     initPWM();
     initSwitch();
+    delayUs(250); //delay for starting up ultrasonic sensor
     
     
     initIR();
     clearLCD();
 
-    TRISDbits.TRISD2 = 0;
+   // TRISDbits.TRISD2 = 0;
     int i = 0;
+    int slow = regSpeed;
     stop();
     
     while (1) {
         
             switch(state) {
                 case init:
-                    val = midRight;
+                    val = sonicSense * (29.0/20.0);
+                    
+                    //readySetGo();
                     readAdc(val);
                     break;
 
                 case go:
                     printStringLCD("GO");
+                    clearLCD();
                     forward();
                     state = fwd;
                     break;
                     
+                case objFound:
+                    printStringLCD("SLOW");
+                    while (slow >= 0) {
+                    motorL = slow;
+                    motorR = slow;
+                    slow = slow - 50;
+                    }
+                    slow = regSpeed;
+                    state = init;
+                    break;
+                    
                 case fwd:
                     readAdc(val);
-                    //clearLCD();
+                    clearLCD();
                     motorL = regSpeed;
                     motorR = regSpeed;
                     
@@ -107,32 +124,22 @@ int main(void)
                     if (right < rightUpper) {
                         state = turnRight;
                     }
-                     
-                    //LOST THE TAPE
-                   // else if (midLeft > midLeftUpper && midRight > midRightUpper && left > leftUpper && right > rightUpper){
-                     //   state = findTape;
-                        //stop();
-                    //}
-
                     
                     //Intersection
                     if (midLeft < midLeftUpper && midRight < midRightUpper && left < leftUpper && right < rightUpper){
                         state = Tsection;
                     }
-                     /*
-                    //Tape turnoff
-                    if (midLeft < midLeftLower && midRight < midRightLower && left < leftLower) {
-                        state = tapeTurnoffLeft;
+                     
+                    //Object Detected
+                        if (sonicSense < 20) {
+                        state = objFound;
                     }
-                    if (midLeft < midLeftLower && midRight < midRightLower && right < rightLower) {
-                        state = tapeTurnoffRight;
-                    }
-                    */
                     
                     else {
                         forward();
                     }
                     break;
+                    
                 ////For turns, keep going but one wheel will go faster
                 case turnRight:
                     printStringLCD("turnRight");
@@ -155,12 +162,7 @@ int main(void)
                     motorL = regSpeed;
                     state = fwd;
                     break;
-                ////To be implemented
-                case objFound:
-                    break;
-
-                ////Lost - spin in place
-                ////Would like to find a way to spin 360 deg
+                /*
                 case findTape:
                     printStringLCD("Lost");
                     clearLCD();
@@ -181,6 +183,7 @@ int main(void)
                     state = fwd;
                     }
                     break;
+                    */
 
                 ////Intersection
                 case Tsection:
@@ -192,20 +195,7 @@ int main(void)
                     }
                  
                     break;
-
-                ////For now we are not trying to do the D loop
-                case tapeTurnoffLeft:
-                    printStringLCD("SharpLeft");
-                    clearLCD();
-                    state = fwd;
-                    break;
-
-                case tapeTurnoffRight:
-                    printStringLCD("SharpRight");
-                    clearLCD();
-                    state = fwd;
-                    break;
-                    
+                  
                 case done:
                     printStringLCD("TURNAROUND");
                     clearLCD();
